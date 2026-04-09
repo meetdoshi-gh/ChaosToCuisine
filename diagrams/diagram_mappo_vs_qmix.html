@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Why QMIX? — Algorithm Selection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+body{--bg:#0c0b09;--bg2:#1a1714;--ink:#f0ede6;--ink2:#b8b4aa;--ink3:#888580;--bdr:rgba(255,255,255,.10);background:var(--bg);color:var(--ink);margin:0;padding:36px 32px 24px;font-family:'DM Mono',monospace;}
+body.light{--bg:#f5f3ef;--bg2:#ffffff;--ink:#1a1714;--ink2:#44403c;--ink3:#78716c;--bdr:rgba(0,0,0,.12);}
+.btn{position:fixed;top:16px;right:18px;z-index:999;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
+.btn:hover{transform:scale(1.08);}
+.title-row{display:flex;align-items:center;gap:0;margin-bottom:24px;}
+.tl{flex:1;height:2px;border-radius:1px;background:linear-gradient(90deg,#7B35CC,#DB2777,#EA580C);opacity:.65;}
+.tt{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);padding:0 18px;white-space:nowrap;}
+
+/* Context banner */
+.context{background:rgba(162,87,223,.08);border:1px solid rgba(162,87,223,.25);border-radius:10px;padding:13px 18px;margin-bottom:22px;font-size:11px;color:var(--ink2);line-height:1.7;}
+.context strong{color:#c090ff;}
+
+/* Main grid */
+.grid{display:grid;grid-template-columns:1fr 2px 1fr;gap:24px;}
+.divider{background:var(--bdr);}
+.side{display:flex;flex-direction:column;gap:11px;}
+
+.badge{display:inline-block;font-size:9px;letter-spacing:.13em;text-transform:uppercase;padding:3px 9px;border-radius:4px;margin-bottom:5px;font-weight:600;}
+.badge-alt{background:rgba(107,114,128,.18);color:#d1d5db;border:1px solid rgba(107,114,128,.35);}
+.badge-chosen{background:rgba(234,88,12,.18);color:#fdba74;border:1px solid rgba(234,88,12,.40);}
+.side-head{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:2px;}
+.side-sub{font-size:10px;color:var(--ink3);margin-bottom:10px;}
+
+.nd{border-radius:10px;border:1.5px solid;padding:12px 14px;position:relative;}
+.k{font-size:9px;letter-spacing:.17em;text-transform:uppercase;margin-bottom:3px;}
+.v{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px;}
+.d{font-size:11px;color:var(--ink2);line-height:1.65;}
+
+/* Color tokens */
+.sl{background:#121212;border-color:#4B5563;}.sl .k{color:#9ca3af;}.sl .v{color:#d1d5db;}
+.sl-con{background:#2e0a0a;border-color:#DC2626;}.sl-con .k{color:#f87171;}.sl-con .v{color:#fca5a5;}
+.qx-core{background:#2e1507;border-color:#EA580C;border-width:2.5px;box-shadow:0 0 16px rgba(234,88,12,.30);}.qx-core .k{color:#f97316;}.qx-core .v{color:#fdba74;}
+.qx-pro{background:#0d261a;border-color:#059669;}.qx-pro .k{color:#34d399;}.qx-pro .v{color:#6ee7b7;}
+.qx-trade{background:#2e200a;border-color:#D97706;}.qx-trade .k{color:#f59e0b;}.qx-trade .v{color:#fcd34d;}
+.ma-con{background:#2e0a0a;border-color:#DC2626;}.ma-con .k{color:#f87171;}.ma-con .v{color:#fca5a5;}
+
+/* Verdict row */
+.verdict{margin-top:20px;background:rgba(234,88,12,.07);border:1px solid rgba(234,88,12,.25);border-radius:10px;padding:16px 18px;}
+.verd-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#f97316;margin-bottom:10px;}
+.verd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.verd-item{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;text-align:center;}
+.verd-top{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
+.verd-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;}
+.win{color:#6ee7b7;}.loss{color:#f87171;}.draw{color:#fcd34d;}
+
+/* Comparison table */
+.cmp{width:100%;border-collapse:collapse;margin-top:16px;font-size:11px;}
+.cmp th{text-align:left;padding:8px 12px;color:var(--ink2);font-size:9.5px;letter-spacing:.08em;background:var(--bg2);}
+.cmp th:first-child{border-radius:8px 0 0 0;}.cmp th:last-child{border-radius:0 8px 0 0;}
+.cmp td{padding:8px 12px;border-bottom:1px solid var(--bdr);color:var(--ink2);}
+.cmp tr:last-child td{border-bottom:none;}
+.cmp tr:last-child td:first-child{border-radius:0 0 0 8px;}.cmp tr:last-child td:last-child{border-radius:0 0 8px 0;}
+.prop{color:var(--ink);font-weight:600;}
+.win-td{color:#6ee7b7;font-weight:700;}
+.loss-td{color:#f87171;font-weight:700;}
+.draw-td{color:#fcd34d;font-weight:700;}
+</style>
+</head>
+<body>
+<button class="btn" id="tb" onclick="tog()">🌙</button>
+
+<div class="title-row">
+  <div class="tl"></div>
+  <span class="tt">Why QMIX? — Algorithm Selection for Cooperative MARL</span>
+  <div class="tl" style="background:linear-gradient(90deg,#EA580C,#DB2777,#7B35CC)"></div>
+</div>
+
+<div class="context">
+  <strong>Context:</strong> Multiple MARL algorithms exist for cooperative tasks — MAPPO, MADDPG, QMIX. The choice matters structurally: each makes different assumptions about the action space, training paradigm, and how it addresses credit assignment. For the Overcooked setting (discrete actions, fully cooperative, sparse rewards, slow simulator), these differences are decisive.
+</div>
+
+<div class="grid">
+
+  <!-- LEFT: MAPPO -->
+  <div class="side">
+    <span class="badge badge-alt">Considered — not chosen</span>
+    <div class="side-head" style="color:#d1d5db">MAPPO</div>
+    <div class="side-sub">Multi-Agent PPO · On-Policy Actor-Critic</div>
+
+    <div class="nd sl">
+      <div class="k">Training Paradigm</div>
+      <div class="v">On-Policy</div>
+      <div class="d">Cannot reuse past experience. Every update step requires fresh environment interaction — expensive in a simulator as slow as Overcooked. Replay buffers are not compatible with on-policy methods.</div>
+    </div>
+
+    <div class="nd sl">
+      <div class="k">Team Value Function</div>
+      <div class="v">Centralized V(s) — Critic</div>
+      <div class="d">A shared state-value function V(s) is used as the centralized critic — it estimates expected return but does not decompose into per-agent contributions. No value decomposition.</div>
+    </div>
+
+    <div class="nd ma-con">
+      <div class="k">Credit Assignment</div>
+      <div class="v">Advantage Estimation (GAE)</div>
+      <div class="d">Relies on Generalized Advantage Estimation (GAE) to derive per-agent credit from centralized V(s). Indirect and statistically noisy — does not produce an explicit per-agent utility signal.</div>
+    </div>
+
+    <div class="nd ma-con">
+      <div class="k">IGM Property</div>
+      <div class="v">Not Guaranteed</div>
+      <div class="d">No monotonicity constraint. Local greedy actions are not provably consistent with the globally optimal joint action. Coordination correctness is statistically encouraged, not architecturally enforced.</div>
+    </div>
+
+    <div class="nd ma-con">
+      <div class="k">Hyperparameter Surface</div>
+      <div class="v">Broader — additional knobs</div>
+      <div class="d">PPO introduces: clip range ε (controls policy update step size), GAE parameter λ (controls advantage estimation bias-variance tradeoff), and entropy coefficient (controls exploration). Each requires tuning in addition to the standard RL hyperparameters.</div>
+    </div>
+
+    <div class="nd sl">
+      <div class="k">Action Space Fit</div>
+      <div class="v">Discrete — Compatible</div>
+      <div class="d">MAPPO uses a categorical policy distribution over discrete actions — compatible with Overcooked's 6-action space. (Unlike MADDPG, which requires continuous actions.)</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- RIGHT: QMIX -->
+  <div class="side">
+    <span class="badge badge-chosen">Chosen ✓</span>
+    <div class="side-head" style="color:#fdba74">QMIX</div>
+    <div class="side-sub">Monotonic Value Decomposition · Off-Policy Q-Learning</div>
+
+    <div class="nd qx-pro">
+      <div class="k">Training Paradigm</div>
+      <div class="v">Off-Policy + Replay Buffer</div>
+      <div class="d">Decouples data collection from optimization. Past transitions can be reused many times — making training significantly more sample efficient in environments where each episode is expensive to run.</div>
+    </div>
+
+    <div class="nd qx-core">
+      <div class="k">Team Value Function · CORE</div>
+      <div class="v">Q_tot via Value Decomposition</div>
+      <div class="d">Q_tot is explicitly factored into individual agent utility functions Qᵢ through a hypernetwork-conditioned mixing network. The mixing network directly learns how each agent's Q-value contributes to team value.</div>
+    </div>
+
+    <div class="nd qx-pro">
+      <div class="k">Credit Assignment</div>
+      <div class="v">Explicit — via Mixing Gradients</div>
+      <div class="d">Gradients of the TD loss flow through the mixing network back into each agent's DQN — each agent receives a credit signal derived directly from its contribution to Q_tot. Explicit and architecturally grounded.</div>
+    </div>
+
+    <div class="nd qx-pro">
+      <div class="k">IGM Property</div>
+      <div class="v">Architecturally Guaranteed</div>
+      <div class="d">Softplus activation on mixing weights ensures ∂Q_tot/∂Qᵢ > 0 always. Monotonicity is built into the network structure — greedy local actions are provably consistent with the global optimum.</div>
+    </div>
+
+    <div class="nd qx-pro">
+      <div class="k">Hyperparameter Surface</div>
+      <div class="v">Leaner — no PPO-specific knobs</div>
+      <div class="d">No clip range, no GAE parameter, no entropy coefficient. Core knobs: γ (discount), α (learning rate), τ (soft-update), λ (ε-decay). Each of these is already necessary — QMIX adds none beyond standard Q-learning.</div>
+    </div>
+
+    <div class="nd qx-trade">
+      <div class="k">Tradeoff — The Catch</div>
+      <div class="v">ε-Decay Is Extremely Sensitive</div>
+      <div class="d">Being off-policy means exploration must be managed externally through ε-greedy decay. In cooperative sparse-reward tasks, this single parameter is a razor's edge — the wrong value causes complete training failure. This sensitivity is what gave the project its name: Chaos to Cuisine.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Verdict Table -->
+<div class="verdict">
+  <div class="verd-label">⚡ Decision Summary — Why QMIX Fits This Task</div>
+  <div class="verd-grid">
+    <div class="verd-item">
+      <div class="verd-top">Sample Efficiency</div>
+      <div class="verd-val win">QMIX ✓</div>
+    </div>
+    <div class="verd-item">
+      <div class="verd-top">Credit Assignment</div>
+      <div class="verd-val win">QMIX ✓</div>
+    </div>
+    <div class="verd-item">
+      <div class="verd-top">IGM Guarantee</div>
+      <div class="verd-val win">QMIX ✓</div>
+    </div>
+    <div class="verd-item">
+      <div class="verd-top">HP Complexity</div>
+      <div class="verd-val win">QMIX ✓</div>
+    </div>
+  </div>
+</div>
+
+<!-- Comparison table -->
+<table class="cmp" style="margin-top:18px;background:var(--bg2);border-radius:10px;">
+  <thead><tr style="border-bottom:2px solid var(--bdr);">
+    <th>Dimension</th><th>MAPPO</th><th>MADDPG</th><th>QMIX ✓</th>
+  </tr></thead>
+  <tbody>
+    <tr><td class="prop">Training paradigm</td><td class="loss-td">On-policy</td><td class="win-td">Off-policy</td><td class="win-td">Off-policy</td></tr>
+    <tr style="background:var(--bg)"><td class="prop">Discrete actions</td><td class="win-td">✓</td><td class="loss-td">✗ (requires continuous)</td><td class="win-td">✓</td></tr>
+    <tr><td class="prop">Value decomposition</td><td class="loss-td">✗</td><td class="loss-td">✗</td><td class="win-td">✓ Q_tot via fmix</td></tr>
+    <tr style="background:var(--bg)"><td class="prop">IGM guaranteed</td><td class="loss-td">✗</td><td class="loss-td">✗</td><td class="win-td">✓ architectural</td></tr>
+    <tr><td class="prop">Extra HP (beyond base)</td><td class="loss-td">clip ε, GAE λ, entropy</td><td class="loss-td">policy noise, target delay</td><td class="win-td">None beyond Q-learning</td></tr>
+    <tr style="background:var(--bg)"><td class="prop">Empirical record on coop tasks</td><td class="draw-td">Strong</td><td class="draw-td">Moderate</td><td class="win-td">Strong ✓</td></tr>
+  </tbody>
+</table>
+
+<div style="display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding-top:14px;margin-top:18px;border-top:1px solid var(--bdr);font-size:9.5px;color:var(--ink3);">
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#4B5563"></div>MAPPO (considered)</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#EA580C"></div>QMIX (chosen)</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#059669"></div>Advantage over alternatives</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#D97706"></div>Known tradeoff</div>
+  <span style="margin-left:auto;font-size:9px">meetdoshi.me · Chaos to Cuisine · Algorithm Selection</span>
+</div>
+<script>let dark=true;function tog(){dark=!dark;document.body.className=dark?'':'light';document.getElementById('tb').textContent=dark?'🌙':'☀️';}if(window.matchMedia('(prefers-color-scheme: light)').matches)tog();</script>
+</body>
+</html>
