@@ -174,9 +174,9 @@ function build(){
 
   // Training curves
   const eps=Array.from({length:N},(_,i)=>i*100);
-  const l1=makeCurve(N,10,10,N,1.5);
-  const l2=makeCurve(N,16,35,N,2.5);
-  const l3=makeCurve(N,10,60,N,2.0);
+  const l1=makeCurve(N/2,10,10,N,1.5);
+  const l2=makeCurve(N/2,16,35,N,2.5);
+  const l3=makeCurve(N/2,10,60,N,2.0);
   charts.push(new Chart(document.getElementById('c1'),{
     type:'line',
     data:{
