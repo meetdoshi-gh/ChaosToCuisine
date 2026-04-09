@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Architecture — Chaos to Cuisine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+body {
+  --bg:#0c0b09;--bg2:#1a1714;--ink:#f0ede6;--ink2:#b8b4aa;--ink3:#888580;
+  --bdr:rgba(255,255,255,.10);
+  --env-bg:#1a0d2e;--env-bd:#7B35CC;--env-h:#c090ff;--env-s:#a070e8;
+  --obs-bg:#0d1a2e;--obs-bd:#2563EB;--obs-h:#93c5fd;--obs-s:#60a5fa;
+  --dqn-bg:#0d261a;--dqn-bd:#059669;--dqn-h:#6ee7b7;--dqn-s:#34d399;
+  --mix-bg:#2e1507;--mix-bd:#EA580C;--mix-h:#fdba74;--mix-s:#f97316;
+  --hyp-bg:#2e0f1f;--hyp-bd:#DB2777;--hyp-h:#f9a8d4;--hyp-s:#ec4899;
+  --act-bg:#1a0a1a;--act-bd:#9333EA;--act-h:#d8b4fe;--act-s:#a855f7;
+  --tgt-bg:#121212;--tgt-bd:#6B7280;--tgt-h:#d1d5db;--tgt-s:#9ca3af;
+  --los-bg:#1f1a07;--los-bd:#D97706;--los-h:#fcd34d;--los-s:#f59e0b;
+  background:var(--bg);color:var(--ink);margin:0;padding:36px 32px 28px;
+  font-family:'DM Mono',monospace;
+}
+body.light {
+  --bg:#f5f3ef;--bg2:#ffffff;--ink:#1a1714;--ink2:#44403c;--ink3:#78716c;
+  --bdr:rgba(0,0,0,.12);
+  --env-bg:#ede9fe;--env-bd:#7C3AED;--env-h:#5b21b6;--env-s:#8b5cf6;
+  --obs-bg:#dbeafe;--obs-bd:#1D4ED8;--obs-h:#1e3a8a;--obs-s:#3b82f6;
+  --dqn-bg:#d1fae5;--dqn-bd:#047857;--dqn-h:#064e3b;--dqn-s:#10b981;
+  --mix-bg:#ffedd5;--mix-bd:#C2410C;--mix-h:#7c2d12;--mix-s:#f97316;
+  --hyp-bg:#fce7f3;--hyp-bd:#BE185D;--hyp-h:#831843;--hyp-s:#ec4899;
+  --act-bg:#f5f3ff;--act-bd:#7C3AED;--act-h:#4c1d95;--act-s:#8b5cf6;
+  --tgt-bg:#f3f4f6;--tgt-bd:#4B5563;--tgt-h:#1f2937;--tgt-s:#6b7280;
+  --los-bg:#fef3c7;--los-bd:#B45309;--los-h:#78350f;--los-s:#d97706;
+}
+.btn{position:fixed;top:16px;right:18px;z-index:999;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
+.btn:hover{transform:scale(1.08);}
+.title-row{display:flex;align-items:center;gap:0;margin-bottom:24px;min-width:1160px;}
+.tl{flex:1;height:2px;border-radius:1px;background:linear-gradient(90deg,#7B35CC,#DB2777,#EA580C);opacity:.65;}
+.tt{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);padding:0 18px;white-space:nowrap;}
+.canvas{overflow-x:auto;}
+.grid{display:grid;grid-template-columns:160px 30px 155px 30px 175px 30px 170px 30px 145px 30px 140px;gap:0;align-items:start;min-width:1160px;padding-bottom:8px;}
+.col{display:flex;flex-direction:column;gap:10px;}
+.ac{display:flex;align-items:center;justify-content:center;padding-top:32px;}
+.nd{border-radius:10px;padding:12px 14px;border-width:1.5px;border-style:solid;position:relative;cursor:default;transition:transform .18s;}
+.nd:hover{transform:translateY(-2px);}
+.lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px;}
+.ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;line-height:1.25;margin-bottom:3px;}
+.sub{font-size:10px;line-height:1.6;}
+.tip-wrap{position:relative;}
+.tip-wrap:hover .tip{display:block;}
+.tip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:230px;max-width:230px;background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-size:10px;color:var(--ink2);line-height:1.7;white-space:normal;word-break:break-word;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.5);pointer-events:none;}
+.gbar{height:2px;border-radius:1px;margin-bottom:8px;background:linear-gradient(90deg,#7B35CC,#DB2777,#EA580C);opacity:.9;}
+.ph{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px dashed var(--bdr);border-radius:6px;padding:3px 8px;text-align:center;margin-bottom:5px;}
+.env{background:var(--env-bg);border-color:var(--env-bd);}
+.env .lbl{color:var(--env-s);}.env .ttl{color:var(--env-h);}.env .sub{color:var(--env-s);}
+.obs{background:var(--obs-bg);border-color:var(--obs-bd);}
+.obs .lbl{color:var(--obs-s);}.obs .ttl{color:var(--obs-h);}.obs .sub{color:var(--obs-s);}
+.dqn{background:var(--dqn-bg);border-color:var(--dqn-bd);}
+.dqn .lbl{color:var(--dqn-s);}.dqn .ttl{color:var(--dqn-h);}.dqn .sub{color:var(--dqn-s);}
+.mix{background:var(--mix-bg);border-color:var(--mix-bd);border-width:2.5px;box-shadow:0 0 18px rgba(234,88,12,.35),0 0 40px rgba(234,88,12,.12);}
+.mix .lbl{color:var(--mix-s);}.mix .ttl{color:var(--mix-h);}.mix .sub{color:var(--mix-s);}
+.hyp{background:var(--hyp-bg);border-color:var(--hyp-bd);}
+.hyp .lbl{color:var(--hyp-s);}.hyp .ttl{color:var(--hyp-h);}.hyp .sub{color:var(--hyp-s);}
+.act{background:var(--act-bg);border-color:var(--act-bd);}
+.act .lbl{color:var(--act-s);}.act .ttl{color:var(--act-h);}.act .sub{color:var(--act-s);}
+.tgt{background:var(--tgt-bg);border-color:var(--tgt-bd);opacity:.72;}
+.tgt .lbl{color:var(--tgt-s);}.tgt .ttl{color:var(--tgt-h);}.tgt .sub{color:var(--tgt-s);}
+.los{background:var(--los-bg);border-color:var(--los-bd);}
+.los .lbl{color:var(--los-s);}.los .ttl{color:var(--los-h);}.los .sub{color:var(--los-s);}
+.leg{display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding-top:14px;margin-top:16px;border-top:1px solid var(--bdr);font-size:9.5px;color:var(--ink3);min-width:1160px;}
+.li{display:flex;align-items:center;gap:5px;}
+.ld{width:9px;height:9px;border-radius:2px;}
+</style>
+</head>
+<body>
+<button class="btn" id="tb" onclick="tog()">🌙</button>
+<div class="title-row">
+  <div class="tl"></div>
+  <span class="tt">QMIX System Architecture — CTDE Pipeline</span>
+  <div class="tl" style="background:linear-gradient(90deg,#EA580C,#DB2777,#7B35CC)"></div>
+</div>
+<div class="canvas">
+<div class="grid">
+
+  <div class="col">
+    <div class="ph">Environment</div>
+    <div class="nd env tip-wrap">
+      <div class="gbar"></div>
+      <div class="lbl">Simulator</div>
+      <div class="ttl">Overcooked-AI</div>
+      <div class="sub">3 layouts · gym<br>horizon = 400 steps<br>2 chefs / episode</div>
+      <div class="tip">Cooperative kitchen simulator. Two agents collaborate to prepare and deliver onion soups. Three layouts of increasing difficulty: cramped_room, coordination_ring, counter_circuit. Episode truncates at 400 steps. Agent indices are randomized at each reset.</div>
+    </div>
+    <div class="nd env tip-wrap" style="opacity:.75;border-style:dashed;">
+      <div class="lbl">Team Reward</div>
+      <div class="ttl">r_team</div>
+      <div class="sub">+20 delivery<br>shaping: pot/dish/soup<br>values: +3/+3/+5</div>
+      <div class="tip">r_team = r_env + shaped_r₀ + shaped_r₁. The shared team reward is used for the Bellman target. Shaped rewards are given per-agent by the environment for specific events (potting an onion, picking up a dish, picking up soup).</div>
+    </div>
+  </div>
+
+  <div class="ac">
+    <svg width="30" height="24" viewBox="0 0 30 24"><defs><marker id="a1" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M1,1 L6,3.5 L1,6" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/></marker></defs><line x1="2" y1="12" x2="24" y2="12" stroke="#2563EB" stroke-width="1.8" marker-end="url(#a1)"/></svg>
+  </div>
+
+  <div class="col">
+    <div class="ph">Observations</div>
+    <div class="nd obs tip-wrap">
+      <div class="lbl">Agent 0 Obs</div>
+      <div class="ttl">s₀ ∈ ℝ⁹⁶</div>
+      <div class="sub">orientation · distances<br>held item · pot states<br>partner details</div>
+      <div class="tip">96-dim state. Includes: own orientation, distances to dispensers and serving area, held item, cooking pot distances and timers, and the same details for the partner agent. Fully observable environment — "observation" = full state.</div>
+    </div>
+    <div class="nd obs tip-wrap">
+      <div class="lbl">Agent 1 Obs</div>
+      <div class="ttl">s₁ ∈ ℝ⁹⁶</div>
+      <div class="sub">orientation · distances<br>held item · pot states<br>partner details</div>
+      <div class="tip">Same structure as s₀ from agent 1's perspective. Agent index randomization forces both agents to learn identical role-agnostic policies — validated empirically through behavioral metric analysis.</div>
+    </div>
+    <div class="nd obs tip-wrap" style="opacity:.7;border-style:dashed;">
+      <div class="lbl">Centralized Info</div>
+      <div class="ttl">z = [s₀; s₁] ∈ ℝ¹⁹²</div>
+      <div class="sub">training only<br>→ hypernetworks</div>
+      <div class="tip">Concatenation of both agents' states. Used only during training as input to the hypernetworks that generate mixing network weights. Not available to agents during execution — this is what makes it CTDE.</div>
+    </div>
+  </div>
+
+  <div class="ac">
+    <svg width="30" height="24" viewBox="0 0 30 24"><defs><marker id="a2" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M1,1 L6,3.5 L1,6" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round"/></marker></defs><line x1="2" y1="12" x2="24" y2="12" stroke="#059669" stroke-width="1.8" marker-end="url(#a2)"/></svg>
+  </div>
+
+  <div class="col">
+    <div class="ph">Agent Networks</div>
+    <div class="nd dqn tip-wrap">
+      <div class="lbl">Agent 0 DQN θ₀</div>
+      <div class="ttl">Q₀(s₀, a ; θ₀)</div>
+      <div class="sub">96→256→256→6<br>ReLU · Q-values<br>+ target Q̄₀</div>
+      <div class="tip">Per-agent deep Q-network. Outputs Q-values for all 6 actions given s₀. Two hidden layers of 256 units each with ReLU. Separate target DQN Q̄₀ for stable Bellman targets, soft-updated with τ=0.028.</div>
+    </div>
+    <div class="nd dqn tip-wrap">
+      <div class="lbl">Agent 1 DQN θ₁</div>
+      <div class="ttl">Q₁(s₁, a ; θ₁)</div>
+      <div class="sub">96→256→256→6<br>ReLU · Q-values<br>+ target Q̄₁</div>
+      <div class="tip">Identical architecture to Q₀ but separate parameters. Agents learn independently. During ε-greedy training, each makes its own random/greedy decision.</div>
+    </div>
+    <div class="nd tgt tip-wrap">
+      <div class="lbl">Replay Buffer D</div>
+      <div class="ttl">100K transitions</div>
+      <div class="sub">(s₀,s₁,z,a₀,a₁,<br>r_team,d,s₀',s₁',z')<br>batch = 512</div>
+      <div class="tip">Off-policy experience replay. Stores full transition tuples. Uniform random sampling breaks temporal correlations. Pre-filled with random-policy transitions before training begins.</div>
+    </div>
+  </div>
+
+  <div class="ac">
+    <svg width="30" height="24" viewBox="0 0 30 24"><defs><marker id="a3" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M1,1 L6,3.5 L1,6" fill="none" stroke="#EA580C" stroke-width="1.8" stroke-linecap="round"/></marker></defs><line x1="2" y1="12" x2="24" y2="12" stroke="#EA580C" stroke-width="1.8" marker-end="url(#a3)"/></svg>
+  </div>
+
+  <div class="col">
+    <div class="ph">Mixing (Training)</div>
+    <div class="nd hyp tip-wrap">
+      <div class="lbl">HyperNets W₁,W₂,B₁,B₂</div>
+      <div class="ttl">z → weights</div>
+      <div class="sub">Linear(192→128)→Softplus<br>W₁:(B,64,2) W₂:(B,1,64)<br>biases unconstrained</div>
+      <div class="tip">Four hypernetworks (single Linear layers each) take centralized info z and produce the weights and biases for the mixing network. Softplus on W₁,W₂ ensures strictly positive weights — the mathematical requirement for the IGM monotonicity guarantee.</div>
+    </div>
+    <div class="nd mix tip-wrap">
+      <div class="lbl">Mixing Network · CORE</div>
+      <div class="ttl">fmix → Q_tot</div>
+      <div class="sub">ELU(W₁·[Q₀;Q₁]+B₁)<br>→ W₂·h + B₂<br>→ scalar Q_tot</div>
+      <div class="tip">Takes [Q₀, Q₁] as a 2-vector. Applies two linear layers using hypernetwork-generated weights. ELU activation in hidden layer. Softplus weights guarantee strict monotonicity: ∂Q_tot/∂Qᵢ > 0 for all i. This ensures local greedy actions are globally optimal.</div>
+    </div>
+    <div class="nd tgt tip-wrap" style="border-style:dashed;">
+      <div class="lbl">Target Mixer</div>
+      <div class="ttl">Q_tot_next</div>
+      <div class="sub">soft-updated copy<br>τ = 0.028 / epoch</div>
+      <div class="tip">Target mixing network used to compute Q_tot for next states in the Bellman target. Prevents moving-target instability. Updated alongside Q̄₀ and Q̄₁ at end of each training epoch.</div>
+    </div>
+  </div>
+
+  <div class="ac">
+    <svg width="30" height="24" viewBox="0 0 30 24"><defs><marker id="a4" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M1,1 L6,3.5 L1,6" fill="none" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"/></marker></defs><line x1="2" y1="12" x2="24" y2="12" stroke="#D97706" stroke-width="1.8" marker-end="url(#a4)"/></svg>
+  </div>
+
+  <div class="col">
+    <div class="ph">Optimization</div>
+    <div class="nd los tip-wrap">
+      <div class="lbl">Bellman Target</div>
+      <div class="ttl">targetQMIX</div>
+      <div class="sub">r_team + γ·Q_tot_next<br>·(1−done) · γ=0.99</div>
+      <div class="tip">One-step TD target using team reward and discounted next-state Q_tot from target networks. γ=0.99 chosen after sweep — γ=0.999 caused agents to overlook immediate sub-tasks.</div>
+    </div>
+    <div class="nd los tip-wrap">
+      <div class="lbl">Loss · AdamW</div>
+      <div class="ttl">Smooth L1</div>
+      <div class="sub">Huber(Q_tot, target)<br>lr = 0.0007<br>batch = 512</div>
+      <div class="tip">Smooth L1 (Huber) loss is more robust to outlier Q-value estimates than MSE during early high-variance exploration. AdamW lr=0.0007 chosen after sweep — lower delays convergence, higher causes Q-value overestimation and collapse to zero reward.</div>
+    </div>
+  </div>
+
+  <div class="ac">
+    <svg width="30" height="24" viewBox="0 0 30 24"><defs><marker id="a5" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M1,1 L6,3.5 L1,6" fill="none" stroke="#9333EA" stroke-width="1.8" stroke-linecap="round"/></marker></defs><line x1="2" y1="12" x2="24" y2="12" stroke="#9333EA" stroke-width="1.8" marker-end="url(#a5)"/></svg>
+  </div>
+
+  <div class="col">
+    <div class="ph">Decentralized Execution</div>
+    <div class="nd act tip-wrap">
+      <div class="lbl">Agent 0 Acts</div>
+      <div class="ttl">argmax Q₀(s₀)</div>
+      <div class="sub">s₀ only · no comms<br>no centralized info<br>fully independent</div>
+      <div class="tip">At execution time, agent 0 selects actions by argmax over Q₀ given only its local observation s₀. No access to s₁ or the mixer. The IGM property guarantees this is globally optimal.</div>
+    </div>
+    <div class="nd act tip-wrap">
+      <div class="lbl">Agent 1 Acts</div>
+      <div class="ttl">argmax Q₁(s₁)</div>
+      <div class="sub">s₁ only · no comms<br>no centralized info<br>fully independent</div>
+      <div class="tip">Agent 1 acts symmetrically and independently. Both agents converge to near-identical policies due to agent-index randomization, validated through behavioral metric analysis showing ~50/50 task distribution.</div>
+    </div>
+    <div class="nd act tip-wrap" style="opacity:.65;border-style:dashed;">
+      <div class="lbl">ε-Greedy (training)</div>
+      <div class="ttl">Exploration</div>
+      <div class="sub">ε·exp(-λ·epoch)<br>λ=0.00055 · ε_min=0.005</div>
+      <div class="tip">Exponential ε-decay during training. λ=0.00055 is the most sensitive hyperparameter — the margin between successful convergence and failure across all three layouts is extremely narrow.</div>
+    </div>
+  </div>
+
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#7B35CC"></div>Environment</div>
+  <div class="li"><div class="ld" style="background:#2563EB"></div>State / Observations</div>
+  <div class="li"><div class="ld" style="background:#059669"></div>Agent DQNs</div>
+  <div class="li"><div class="ld" style="background:#DB2777"></div>Hypernetworks</div>
+  <div class="li"><div class="ld" style="background:#EA580C"></div>Mixing Network (core)</div>
+  <div class="li"><div class="ld" style="background:#D97706"></div>Optimization</div>
+  <div class="li"><div class="ld" style="background:#9333EA"></div>Decentralized Execution</div>
+  <div class="li"><div class="ld" style="background:#6B7280"></div>Target / Auxiliary</div>
+  <span style="margin-left:auto;font-size:9px;color:var(--ink3)">meetdoshi.me · Chaos to Cuisine · QMIX</span>
+</div>
+</div>
+<script>
+let dark=true;
+function tog(){dark=!dark;document.body.className=dark?'':'light';document.getElementById('tb').textContent=dark?'🌙':'☀️';}
+if(window.matchMedia('(prefers-color-scheme: light)').matches)tog();
+</script>
+</body>
+</html>

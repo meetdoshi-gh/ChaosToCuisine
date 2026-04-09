@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Results — Chaos to Cuisine QMIX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+body{--bg:#0c0b09;--bg2:#1a1714;--ink:#f0ede6;--ink2:#b8b4aa;--ink3:#888580;--bdr:rgba(255,255,255,.10);background:var(--bg);color:var(--ink);margin:0;padding:36px 32px 24px;font-family:'DM Mono',monospace;}
+body.light{--bg:#f5f3ef;--bg2:#ffffff;--ink:#1a1714;--ink2:#44403c;--ink3:#78716c;--bdr:rgba(0,0,0,.12);}
+.btn{position:fixed;top:16px;right:18px;z-index:999;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
+.btn:hover{transform:scale(1.08);}
+.title-row{display:flex;align-items:center;gap:0;margin-bottom:20px;}
+.tl{flex:1;height:2px;border-radius:1px;background:linear-gradient(90deg,#7B35CC,#DB2777,#EA580C);opacity:.65;}
+.tt{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);padding:0 18px;white-space:nowrap;}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;}
+.stat-label{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,#A257DF,#F25E56);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-note{font-size:9px;color:var(--ink3);margin-top:3px;}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.chart-box{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:18px;}
+.chart-title{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;}
+.chart-wrap{position:relative;height:200px;}
+.clegend{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;}
+.cleg-item{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--ink3);}
+.cleg-dot{width:10px;height:3px;border-radius:2px;}
+.threshold-note{font-size:9px;color:var(--ink3);margin-top:6px;text-align:center;}
+</style>
+</head>
+<body>
+<button class="btn" id="tb" onclick="tog()">🌙</button>
+<div class="title-row">
+  <div class="tl"></div>
+  <span class="tt">QMIX Results — Training · Evaluation · Hyperparameter Sensitivity</span>
+  <div class="tl" style="background:linear-gradient(90deg,#EA580C,#DB2777,#7B35CC)"></div>
+</div>
+
+<div class="stat-row">
+  <div class="stat">
+    <div class="stat-label">Best Eval — coordination ring</div>
+    <div class="stat-val">17</div>
+    <div class="stat-note">soups/episode · 100 episodes</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">All Layouts Beat Threshold</div>
+    <div class="stat-val">3/3</div>
+    <div class="stat-note">≥7 soups/ep success criterion</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Eval Consistency</div>
+    <div class="stat-val">100%</div>
+    <div class="stat-note">deterministic greedy policy</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Threshold Margin</div>
+    <div class="stat-val">+143%</div>
+    <div class="stat-note">coordination ring above ≥7</div>
+  </div>
+</div>
+
+<div class="charts">
+  <!-- Chart 1: Training curves -->
+  <div class="chart-box">
+    <div class="chart-title">Training — Soups Delivered (Moving Avg W=100) · illustrative trend</div>
+    <div class="chart-wrap"><canvas id="c1"></canvas></div>
+    <div class="clegend">
+      <div class="cleg-item"><div class="cleg-dot" style="background:#0D9488"></div>cramped room (L1)</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#9333EA"></div>coordination ring (L2)</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#D97706"></div>counter circuit (L3)</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:rgba(239,68,68,.5);height:1px;width:18px;border-top:1.5px dashed #EF4444;"></div>threshold ≥7</div>
+    </div>
+    <div class="threshold-note">(illustrative trend based on actual convergence episodes and values)</div>
+  </div>
+
+  <!-- Chart 2: Evaluation comparison -->
+  <div class="chart-box">
+    <div class="chart-title">Evaluation — Soups per Episode (100 episodes, greedy, deterministic)</div>
+    <div class="chart-wrap"><canvas id="c2"></canvas></div>
+    <div class="clegend">
+      <div class="cleg-item"><div class="cleg-dot" style="background:#0D9488"></div>cramped room</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#9333EA"></div>coordination ring</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#D97706"></div>counter circuit</div>
+    </div>
+  </div>
+
+  <!-- Chart 3: HP sensitivity -->
+  <div class="chart-box">
+    <div class="chart-title">Hyperparameter Sensitivity — Training convergence on layout 1 · illustrative trend</div>
+    <div class="chart-wrap"><canvas id="c3"></canvas></div>
+    <div class="clegend">
+      <div class="cleg-item"><div class="cleg-dot" style="background:#6ee7b7"></div>α=0.0007 (optimal)</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#f9a8d4"></div>α=0.001 (overestimates)</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#93c5fd"></div>α=0.0003 (too slow)</div>
+    </div>
+    <div class="threshold-note">(illustrative trend · based on report findings)</div>
+  </div>
+
+  <!-- Chart 4: Episode count to convergence -->
+  <div class="chart-box">
+    <div class="chart-title">Episodes to Convergence vs. Layout Complexity</div>
+    <div class="chart-wrap"><canvas id="c4"></canvas></div>
+    <div class="clegend">
+      <div class="cleg-item"><div class="cleg-dot" style="background:#0D9488"></div>cramped room</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#9333EA"></div>coordination ring</div>
+      <div class="cleg-item"><div class="cleg-dot" style="background:#D97706"></div>counter circuit</div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding-top:14px;margin-top:18px;border-top:1px solid var(--bdr);font-size:9.5px;color:var(--ink3);">
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#0D9488"></div>Cramped Room (L1)</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#9333EA"></div>Coordination Ring (L2)</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#D97706"></div>Counter Circuit (L3)</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:rgba(239,68,68,.6)"></div>Success Threshold (≥7)</div>
+  <span style="margin-left:auto;font-size:9px">meetdoshi.me · Chaos to Cuisine · Results</span>
+</div>
+
+<script>
+let dark=true;
+let charts=[];
+
+function gcol(d){
+  return{
+    grid: d?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)',
+    tick: d?'#888580':'#78716c',
+    label:d?'#b8b4aa':'#44403c',
+  };
+}
+
+function makeCurve(n,target,startEp,totalEp,noise=0.8){
+  const pts=[];
+  for(let i=0;i<totalEp;i++){
+    if(i<startEp){pts.push(Math.max(0,noise*(Math.random()-0.4)));continue;}
+    const t=i-startEp;
+    const decay=(totalEp-startEp)*0.3;
+    const v=target*(1-Math.exp(-t/decay));
+    pts.push(Math.max(0,v+noise*(Math.random()-0.5)));
+  }
+  return pts;
+}
+
+function build(){
+  charts.forEach(c=>c.destroy());charts=[];
+  const c=gcol(dark);
+  const bg=dark?'#1a1714':'#ffffff';
+  const N=100;
+
+  // Training curves
+  const eps=Array.from({length:N},(_,i)=>i*100);
+  const l1=makeCurve(N,10,10,N,1.5);
+  const l2=makeCurve(N,16,35,N,2.5);
+  const l3=makeCurve(N,10,60,N,2.0);
+  charts.push(new Chart(document.getElementById('c1'),{
+    type:'line',
+    data:{
+      labels:eps,
+      datasets:[
+        {label:'L1',data:l1,borderColor:'#0D9488',backgroundColor:'rgba(13,148,136,.08)',borderWidth:2,pointRadius:0,tension:.3},
+        {label:'L2',data:l2,borderColor:'#9333EA',backgroundColor:'rgba(147,51,234,.08)',borderWidth:2,pointRadius:0,tension:.3},
+        {label:'L3',data:l3,borderColor:'#D97706',backgroundColor:'rgba(217,119,6,.08)',borderWidth:2,pointRadius:0,tension:.3},
+        {label:'Threshold',data:Array(N).fill(7),borderColor:'rgba(239,68,68,.6)',borderWidth:1.5,borderDash:[4,4],pointRadius:0},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:c.grid},title:{display:true,text:'Episodes ×100',color:c.label,font:{size:9}}},
+        y:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:c.grid},title:{display:true,text:'Soups / Episode',color:c.label,font:{size:9}},min:0,max:20}
+      }
+    }
+  }));
+
+  // Evaluation bar
+  charts.push(new Chart(document.getElementById('c2'),{
+    type:'bar',
+    data:{
+      labels:['Cramped Room','Coordination Ring','Counter Circuit'],
+      datasets:[
+        {label:'Evaluation',data:[12,17,10],backgroundColor:['rgba(13,148,136,.7)','rgba(147,51,234,.7)','rgba(217,119,6,.7)'],borderColor:['#0D9488','#9333EA','#D97706'],borderWidth:1.5,borderRadius:6},
+        {label:'Threshold',data:[7,7,7],backgroundColor:'rgba(239,68,68,.15)',borderColor:'rgba(239,68,68,.6)',borderWidth:1.5,borderRadius:6}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:'transparent'}},
+        y:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:c.grid},min:0,max:20,title:{display:true,text:'Soups / Episode',color:c.label,font:{size:9}}}
+      }
+    }
+  }));
+
+  // HP sensitivity (LR) - illustrative
+  const ep2=Array.from({length:60},(_,i)=>i*50);
+  const lr_opt=ep2.map(e=>10*(1-Math.exp(-e/800))+0.3*Math.sin(e/50)*Math.exp(-e/800));
+  const lr_high=ep2.map(e=>e<1500?3*(1-Math.exp(-e/200)):Math.max(0,3-0.005*(e-1500)));
+  const lr_low=ep2.map(e=>10*(1-Math.exp(-e/2500)));
+  charts.push(new Chart(document.getElementById('c3'),{
+    type:'line',
+    data:{
+      labels:ep2,
+      datasets:[
+        {label:'optimal',data:lr_opt.map(v=>Math.max(0,v)),borderColor:'#6ee7b7',borderWidth:2,pointRadius:0,tension:.4},
+        {label:'too high',data:lr_high.map(v=>Math.max(0,v)),borderColor:'#f9a8d4',borderWidth:2,pointRadius:0,tension:.4},
+        {label:'too low',data:lr_low.map(v=>Math.max(0,v)),borderColor:'#93c5fd',borderWidth:2,pointRadius:0,tension:.4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:c.grid},title:{display:true,text:'Episodes',color:c.label,font:{size:9}}},
+        y:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:c.grid},min:0,max:12,title:{display:true,text:'Soups / Ep',color:c.label,font:{size:9}}}
+      }
+    }
+  }));
+
+  // Episodes to convergence horizontal bar
+  charts.push(new Chart(document.getElementById('c4'),{
+    type:'bar',
+    data:{
+      labels:['Cramped Room (L1)','Coordination Ring (L2)','Counter Circuit (L3)'],
+      datasets:[{
+        label:'Episodes to convergence',
+        data:[2000,5000,8000],
+        backgroundColor:['rgba(13,148,136,.7)','rgba(147,51,234,.7)','rgba(217,119,6,.7)'],
+        borderColor:['#0D9488','#9333EA','#D97706'],borderWidth:1.5,borderRadius:6
+      }]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:c.grid},title:{display:true,text:'Episodes to Convergence',color:c.label,font:{size:9}}},
+        y:{ticks:{color:c.tick,font:{family:'DM Mono',size:9}},grid:{color:'transparent'}}
+      }
+    }
+  }));
+}
+
+function tog(){
+  dark=!dark;
+  document.body.className=dark?'':'light';
+  document.getElementById('tb').textContent=dark?'🌙':'☀️';
+  build();
+}
+
+if(window.matchMedia('(prefers-color-scheme: light)').matches){dark=false;document.body.className='light';}
+window.addEventListener('load',build);
+</script>
+</body>
+</html>

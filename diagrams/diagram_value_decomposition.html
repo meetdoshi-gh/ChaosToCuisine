@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Value Decomposition — VDN vs QMIX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+body{--bg:#0c0b09;--bg2:#1a1714;--ink:#f0ede6;--ink2:#b8b4aa;--ink3:#888580;--bdr:rgba(255,255,255,.10);background:var(--bg);color:var(--ink);margin:0;padding:36px 32px 24px;font-family:'DM Mono',monospace;}
+body.light{--bg:#f5f3ef;--bg2:#ffffff;--ink:#1a1714;--ink2:#44403c;--ink3:#78716c;--bdr:rgba(0,0,0,.12);}
+.btn{position:fixed;top:16px;right:18px;z-index:999;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
+.btn:hover{transform:scale(1.08);}
+.title-row{display:flex;align-items:center;gap:0;margin-bottom:28px;}
+.tl{flex:1;height:2px;border-radius:1px;background:linear-gradient(90deg,#7B35CC,#DB2777,#EA580C);opacity:.65;}
+.tt{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);padding:0 18px;white-space:nowrap;}
+.cols{display:grid;grid-template-columns:1fr 1px 1fr;gap:32px;max-width:960px;margin:0 auto;}
+.divider{background:var(--bdr);align-self:stretch;}
+.side{display:flex;flex-direction:column;gap:14px;}
+.head{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:2px;}
+.sub-h{font-size:11px;color:var(--ink3);margin-bottom:14px;}
+.eq{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:14px 16px;font-size:13px;color:#fcd34d;font-family:'DM Mono',monospace;text-align:center;margin-bottom:8px;}
+.eq span{color:var(--ink2);font-size:10px;display:block;margin-top:6px;}
+.nd{border-radius:10px;padding:12px 14px;border-width:1.5px;border-style:solid;position:relative;}
+.lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px;}
+.ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;line-height:1.25;margin-bottom:3px;}
+.txt{font-size:11px;color:var(--ink2);line-height:1.65;}
+.pro{background:#0d261a;border-color:#059669;}
+.pro .lbl{color:#34d399;}.pro .ttl{color:#6ee7b7;}
+.con{background:#2e0a0a;border-color:#DC2626;}
+.con .lbl{color:#f87171;}.con .ttl{color:#fca5a5;}
+.vdn-q{background:#1a0d2e;border-color:#7B35CC;}
+.vdn-q .lbl{color:#a070e8;}.vdn-q .ttl{color:#c090ff;}
+.mix-q{background:#2e1507;border-color:#EA580C;border-width:2.5px;box-shadow:0 0 18px rgba(234,88,12,.35);}
+.mix-q .lbl{color:#f97316;}.mix-q .ttl{color:#fdba74;}
+.row{display:flex;gap:8px;align-items:stretch;}
+.badge{display:inline-block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:8px;font-weight:600;}
+.badge-vdn{background:rgba(123,53,204,.18);color:#c090ff;border:1px solid rgba(123,53,204,.4);}
+.badge-qmix{background:rgba(234,88,12,.18);color:#fdba74;border:1px solid rgba(234,88,12,.4);}
+.diff-row{display:flex;gap:0;margin-top:8px;}
+.diff-cell{flex:1;background:var(--bg2);border:1px solid var(--bdr);padding:10px 12px;font-size:10px;color:var(--ink2);line-height:1.6;}
+.diff-cell:first-child{border-radius:8px 0 0 8px;}
+.diff-cell:last-child{border-radius:0 8px 8px 0;border-left:none;}
+.diff-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
+.arrow-down{text-align:center;color:var(--ink3);font-size:20px;margin:4px 0;}
+.igm-box{background:var(--bg2);border:1px solid rgba(234,88,12,.4);border-radius:10px;padding:16px;margin-top:8px;}
+.igm-title{color:#fdba74;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.igm-eq{font-size:12px;color:#fcd34d;text-align:center;line-height:2;}
+.igm-note{font-size:10px;color:var(--ink2);margin-top:8px;line-height:1.6;}
+</style>
+</head>
+<body>
+<button class="btn" id="tb" onclick="tog()">🌙</button>
+
+<div class="title-row">
+  <div class="tl"></div>
+  <span class="tt">Value Decomposition — VDN vs QMIX</span>
+  <div class="tl" style="background:linear-gradient(90deg,#EA580C,#DB2777,#7B35CC)"></div>
+</div>
+
+<div class="cols">
+
+  <!-- LEFT: VDN -->
+  <div class="side">
+    <div>
+      <span class="badge badge-vdn">Predecessor</span>
+      <div class="head" style="color:#c090ff">VDN</div>
+      <div class="sub-h">Value Decomposition Networks</div>
+    </div>
+    <div class="eq">Q_tot = Σ Qᵢ(sᵢ, aᵢ ; θᵢ)<span>Linear sum — assumes equal, additive contribution per agent</span></div>
+    <div class="nd vdn-q">
+      <div class="lbl">How It Works</div>
+      <div class="ttl">Linear Factorization</div>
+      <div class="txt">The global team value function is simply the sum of individual agent Q-values. No mixing network. No conditioning on global state. Each agent's contribution is treated as independent and additive.</div>
+    </div>
+    <div class="nd pro">
+      <div class="lbl">Advantage</div>
+      <div class="ttl">Simplicity</div>
+      <div class="txt">No additional parameters. Linear sum trivially satisfies IGM — greedy local actions are always globally consistent.</div>
+    </div>
+    <div class="nd con">
+      <div class="lbl">Limitation</div>
+      <div class="ttl">Weak Representational Power</div>
+      <div class="txt">Agents' contributions to team value are almost never truly linear in real cooperative tasks. Collaboration, spatial dependencies, and role asymmetry create non-linear interaction effects that VDN cannot capture.</div>
+    </div>
+    <div class="nd con">
+      <div class="lbl">Limitation</div>
+      <div class="ttl">No Global Context</div>
+      <div class="txt">The team Q-value has no access to the joint state. Coordination-critical global information (where both agents are, what both are holding) cannot influence the decomposed values.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- RIGHT: QMIX -->
+  <div class="side">
+    <div>
+      <span class="badge badge-qmix">Implemented</span>
+      <div class="head" style="color:#fdba74">QMIX</div>
+      <div class="sub-h">Monotonic Value Function Factorisation</div>
+    </div>
+    <div class="eq">Q_tot = fmix(Q₁,…,Qₙ ; z, θ_mix)<span>Nonlinear mix conditioned on global state z — via hypernetworks</span></div>
+    <div class="nd mix-q">
+      <div class="lbl">How It Works · CORE</div>
+      <div class="ttl">Monotonic Nonlinear Mixing</div>
+      <div class="txt">The mixing function fmix is a 2-layer neural network whose weights are generated by hypernetworks conditioned on the joint state z. This allows arbitrary non-linear combinations of agent Q-values — capturing complex inter-agent dependencies — while the Softplus weight constraint enforces strict monotonicity.</div>
+    </div>
+    <div class="nd pro">
+      <div class="lbl">Advantage</div>
+      <div class="ttl">Rich Factorization</div>
+      <div class="txt">Can represent any monotone function of individual Q-values. State-conditioned weights let the mixer assign context-dependent contribution weights to each agent.</div>
+    </div>
+    <div class="nd pro">
+      <div class="lbl">Advantage</div>
+      <div class="ttl">IGM Guaranteed by Design</div>
+      <div class="txt">Softplus activation on mixing weights ensures ∂Q_tot/∂Qᵢ > 0 for all i — strict monotonicity is built into the architecture, not assumed.</div>
+    </div>
+    <div class="igm-box">
+      <div class="igm-title">⚡ IGM Property — The Mathematical Core</div>
+      <div class="igm-eq">argmax_a Q_tot(s, a) ⟺ [argmax_{aᵢ} Qᵢ(sᵢ, aᵢ)]</div>
+      <div class="igm-note">The Individual-Global-Max property: greedy local actions compose into the globally optimal joint action. This is what makes decentralized execution work without communication. Monotonicity is a sufficient condition: if Q_tot is strictly increasing in every Qᵢ, then maximizing each Qᵢ independently always maximizes Q_tot jointly.</div>
+    </div>
+  </div>
+</div>
+
+<div style="max-width:960px;margin:24px auto 0;">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
+    <div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center;">
+      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Mixing fn</div>
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fdba74">Nonlinear</div>
+      <div style="font-size:10px;color:var(--ink2);margin-top:3px">vs VDN linear sum</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center;">
+      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Global state</div>
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fdba74">z ∈ ℝ¹⁹²</div>
+      <div style="font-size:10px;color:var(--ink2);margin-top:3px">conditions hypernetworks</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center;">
+      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Monotonicity</div>
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fdba74">Softplus</div>
+      <div style="font-size:10px;color:var(--ink2);margin-top:3px">strict · differentiable</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center;">
+      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">IGM</div>
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#6ee7b7">Guaranteed</div>
+      <div style="font-size:10px;color:var(--ink2);margin-top:3px">by architecture</div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:14px;margin-top:20px;border-top:1px solid var(--bdr);font-size:9.5px;color:var(--ink3);">
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#7B35CC"></div>VDN</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#EA580C"></div>QMIX (implemented)</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#059669"></div>Advantage</div>
+  <div style="display:flex;align-items:center;gap:5px;"><div style="width:9px;height:9px;border-radius:2px;background:#DC2626"></div>Limitation</div>
+  <span style="margin-left:auto;font-size:9px">meetdoshi.me · Chaos to Cuisine · Value Decomposition</span>
+</div>
+<script>let dark=true;function tog(){dark=!dark;document.body.className=dark?'':'light';document.getElementById('tb').textContent=dark?'🌙':'☀️';}if(window.matchMedia('(prefers-color-scheme: light)').matches)tog();</script>
+</body>
+</html>
