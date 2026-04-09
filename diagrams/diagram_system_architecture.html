@@ -5,6 +5,32 @@
 <title>System Architecture — Chaos to Cuisine</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
+/* --- Modern Transparent Scrollbar --- */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  border: 2px solid transparent; /* The "floating" gap */
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+/* ------------------------------------ */
 body {
   --bg:#0c0b09;--bg2:#1a1714;--ink:#f0ede6;--ink2:#b8b4aa;--ink3:#888580;
   --bdr:rgba(255,255,255,.10);

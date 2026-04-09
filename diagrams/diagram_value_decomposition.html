@@ -5,6 +5,32 @@
 <title>Value Decomposition — VDN Foundation → QMIX</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
+/* --- Modern Transparent Scrollbar --- */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  border: 2px solid transparent; /* The "floating" gap */
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+/* ------------------------------------ */
 body{--bg:#0c0b09;--bg2:#1a1714;--ink:#f0ede6;--ink2:#b8b4aa;--ink3:#888580;--bdr:rgba(255,255,255,.10);background:var(--bg);color:var(--ink);margin:0;padding:36px 32px 24px;font-family:'DM Mono',monospace;}
 body.light{--bg:#f5f3ef;--bg2:#ffffff;--ink:#1a1714;--ink2:#44403c;--ink3:#78716c;--bdr:rgba(0,0,0,.12);}
 .btn{position:fixed;top:16px;right:18px;z-index:999;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
